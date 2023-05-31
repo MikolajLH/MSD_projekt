@@ -14,12 +14,10 @@ add_executable(msd_projekt
    src/VertexBuffer.cpp
 )
 
-# add_subdirectory(src/vendor/glm)
 find_package(glfw3 3.3 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 target_link_libraries(msd_projekt GLEW::GLEW)
-target_link_libraries(msd_projekt INTERFACE)
 target_link_libraries(msd_projekt glfw OpenGL::GL)
 
 
