@@ -12,6 +12,8 @@ add_executable(msd_projekt
    src/Shader.cpp
    src/VertexArray.cpp
    src/VertexBuffer.cpp
+   src/lattice.cpp
+   src/application.cpp
 )
 
 # add_subdirectory(src/vendor/glm)
