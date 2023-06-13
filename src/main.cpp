@@ -19,6 +19,12 @@ int width = 900;
 int height = 900;
 constexpr float CUBE_SIZE = 1.0f;
 
+void framebuffer_size_callback(GLFWwindow *window, int _width, int _height) {
+  glViewport(0, 0, _width, _height);
+  width = _width;
+  height = _height;
+}
+
 int main(void) {
 
   /* Initialize the library */
@@ -44,7 +50,7 @@ int main(void) {
 
   /* Make the window's context current */
   glfwMakeContextCurrent(window);
-
+  glfwSetWindowSizeCallback(window, framebuffer_size_callback);
   glfwSwapInterval(1);
 
   if (glewInit() != GLEW_OK) {
@@ -95,6 +101,10 @@ int main(void) {
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
+      if (width != camera.width || height != camera.height) {
+        camera.width = width;
+        camera.height = height;
+      }
 
       glClearColor(0.47f, 0.30f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
