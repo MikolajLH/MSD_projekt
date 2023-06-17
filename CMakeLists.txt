@@ -12,6 +12,8 @@ add_executable(msd_projekt
    src/Shader.cpp
    src/VertexArray.cpp
    src/VertexBuffer.cpp
+   src/lattice.cpp
+   src/application.cpp
 )
 
 find_package(glfw3 3.3 REQUIRED)
