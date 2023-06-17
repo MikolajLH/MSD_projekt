@@ -1,5 +1,16 @@
 #include "application.h"
 
+namespace {
+int width, height;
+
+void framebuffer_size_callback(GLFWwindow *window, int _width, int _height) {
+  glViewport(0, 0, _width, _height);
+  width = _width;
+  height = _height;
+}
+
+} // namespace
+
 App::App(int w, int h, std::string_view title, glm::vec3 cam_pos)
     : wnd(nullptr), camera(w, h, cam_pos) {
 
@@ -10,10 +21,15 @@ App::App(int w, int h, std::string_view title, glm::vec3 cam_pos)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+  width = w;
+  height = h;
+
   wnd = glfwCreateWindow(w, h, title.data(), NULL, NULL);
   assert(wnd);
 
   glfwMakeContextCurrent(wnd);
+
+  glfwSetWindowSizeCallback(wnd, framebuffer_size_callback);
 
   glfwSwapInterval(1);
 
@@ -30,6 +46,9 @@ void App::run() {
 
   static float et = 0.f;
   while (not glfwWindowShouldClose(this->wnd)) {
+    camera.width = width;
+    camera.height = height;
+
     auto beg = std::chrono::steady_clock::now();
     glfwPollEvents();
     camera.handle_inputs(this->wnd);
