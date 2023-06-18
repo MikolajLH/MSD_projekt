@@ -45,7 +45,7 @@ void Camera::handle_inputs(GLFWwindow *window) {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     if (firstClick) {
-      glfwSetCursorPos(window, (width / 2), (height / 2));
+      glfwSetCursorPos(window, (width / 2.0), (height / 2.0));
       firstClick = false;
     }
 
@@ -67,7 +67,7 @@ void Camera::handle_inputs(GLFWwindow *window) {
 
     Orientation = glm::rotate(Orientation, glm::radians(-roty), Up);
 
-    glfwSetCursorPos(window, (width / 2), (height / 2));
+    glfwSetCursorPos(window, (width / 2.0), (height / 2.0));
 
   } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) ==
              GLFW_RELEASE) {

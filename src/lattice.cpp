@@ -27,14 +27,14 @@ void Lattice::update(float dt) {
 
         auto current_cell = (*this)(s, r, c);
 
-        auto cN = get_or(s + 1, r, c, current_cell);
-        auto cS = get_or(s - 1, r, c, current_cell);
+        const auto &cN = get_or(s + 1, r, c, current_cell);
+        const auto &cS = get_or(s - 1, r, c, current_cell);
 
-        auto cU = get_or(s, r + 1, c, current_cell);
-        auto cD = get_or(s, r - 1, c, current_cell);
+        const auto &cU = get_or(s, r + 1, c, current_cell);
+        const auto &cD = get_or(s, r - 1, c, current_cell);
 
-        auto cE = get_or(s, r, c + 1, current_cell);
-        auto cW = get_or(s, r, c - 1, current_cell);
+        const auto &cE = get_or(s, r, c + 1, current_cell);
+        const auto &cW = get_or(s, r, c - 1, current_cell);
 
         float Tdiff = 0.f;
         for (const auto &neighboring_cell : {cN, cS, cU, cD, cE, cW}) {

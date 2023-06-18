@@ -83,7 +83,7 @@ public:
           }
           draw_cube(cube_shader, pos, color);
         }
-    std::cout << lattice(4, 1, 5).temperature << "\n";
+    // std::cout << lattice(4, 1, 5).temperature << "\n";
   }
 
   Shader cube_shader;

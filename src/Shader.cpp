@@ -1,4 +1,5 @@
 #include "Shader.h"
+#include <iostream>
 #include <stdexcept>
 
 Shader::Shader(std::string_view filepath) {
@@ -31,10 +32,27 @@ Shader::Shader(std::string_view filepath) {
   GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertex_shader, 1, &vert_src, nullptr);
   glCompileShader(vertex_shader);
+  GLint compile_ok;
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &compile_ok);
+  if (!compile_ok) {
+    GLsizei log_length = 0;
+    GLchar message[1024];
+    glGetShaderInfoLog(vertex_shader, 1024, &log_length, message);
+    std::cerr << "Error in vertex shader: " << message << std::endl;
+    return;
+  }
 
   GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragment_shader, 1, &frag_src, nullptr);
   glCompileShader(fragment_shader);
+  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &compile_ok);
+  if (!compile_ok) {
+    GLsizei log_length = 0;
+    GLchar message[1024];
+    glGetShaderInfoLog(fragment_shader, 1024, &log_length, message);
+    std::cerr << "Error in fragment shader: " << message << std::endl;
+    return;
+  }
 
   this->m_ID = glCreateProgram();
 
