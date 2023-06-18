@@ -1,4 +1,5 @@
 #include "lattice.h"
+#include "Grid3d.h"
 
 Lattice::Cell::Cell()
     : state{Lattice::Cell::State::empty}, type{Lattice::Cell::Type::air} {}
@@ -57,6 +58,56 @@ void Lattice::update(float dt) {
         auto current_cell = (*this)(s, r, c);
         Cell &updated_cell = background[N * N * s + N * r + c];
 
+        const auto &cN = get_or(s + 1, r, c, current_cell);
+        const auto &cS = get_or(s - 1, r, c, current_cell);
+
+        const auto &cU = get_or(s, r + 1, c, current_cell);
+        const auto &cD = get_or(s, r - 1, c, current_cell);
+
+        const auto &cE = get_or(s, r, c + 1, current_cell);
+        const auto &cW = get_or(s, r, c - 1, current_cell);
+
+        if (current_cell.type == Cell::Type::air) {
+          if (cD.state == Cell::State::on_fire) {
+            // Create new smoke
+            updated_cell.smoke_contents += std::min(
+                0.5f / cD.burning_time,
+                current_cell.smoke_capacity - current_cell.smoke_contents);
+            // std::cout << "Smoke is being emitted, contents : "
+            //           << updated_cell.smoke_contents << std::endl;
+          }
+          const Cell cells[] = {cU, cN, cS, cE, cW, cD};
+          const float dn[] = {1.f, 0.5f, 0.5f, 0.5f, 0.5f, 0.25f};
+          const float dn_when_full[] = {0.f, 0.5f, 0.5f, 0.5f, 0.5f, 1.0f};
+          if (current_cell.smoke_capacity - current_cell.smoke_contents <=
+              current_cell.smoke_capacity * 0.1f) {
+            // Close to being full
+            for (size_t i = 1; i < 6; i++) {
+              const Cell &other = cells[i];
+              updated_cell.smoke_contents -=
+                  1. / 6. *
+                  std::min(current_cell.smoke_contents,
+                           updated_cell.smoke_capacity - other.smoke_contents);
+              updated_cell.smoke_contents +=
+                  1. / 6. *
+                  std::min(other.smoke_contents,
+                           other.smoke_capacity - current_cell.smoke_contents);
+            }
+          } else {
+            for (size_t i = 0; i < 6; i++) {
+              const Cell &other = cells[i];
+              updated_cell.smoke_contents -=
+                  1. / 6. *
+                  std::min(current_cell.smoke_contents,
+                           updated_cell.smoke_capacity - other.smoke_contents);
+              updated_cell.smoke_contents +=
+                  1. / 6. *
+                  std::min(other.smoke_contents,
+                           other.smoke_capacity - current_cell.smoke_contents);
+            }
+          }
+        }
+
         if (current_cell.state == Cell::State::non_flammable)
           continue;
 
@@ -70,15 +121,6 @@ void Lattice::update(float dt) {
             updated_cell.timer += dt;
           }
         }
-
-        auto cN = get_or(s + 1, r, c, current_cell);
-        auto cS = get_or(s - 1, r, c, current_cell);
-
-        auto cU = get_or(s, r + 1, c, current_cell);
-        auto cD = get_or(s, r - 1, c, current_cell);
-
-        auto cE = get_or(s, r, c + 1, current_cell);
-        auto cW = get_or(s, r, c - 1, current_cell);
 
         if (current_cell.state == Cell::State::empty) {
           if (current_cell.temperature >=
