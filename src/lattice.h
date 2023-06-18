@@ -10,7 +10,11 @@ public:
     enum class State { non_flammable, on_fire, empty };
     State state = State::empty;
 
-    enum class Type { air, wood, concrete };
+    enum class Type {
+      air, // Cell with smoke is just a cell with air
+      wood,
+      concrete
+    };
     Type type = Type::air;
 
     float temperature = 273.f;
@@ -20,6 +24,9 @@ public:
     float autoignition_temperature = 273.f + 100.f;
     float ignition_time = 1.f;
     float burning_time = 5.f;
+
+    float smoke_capacity = 1.0f;
+    float smoke_contents = 0.0f;
 
     float timer = 0.f;
     Cell();

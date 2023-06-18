@@ -1,4 +1,6 @@
 #include "application.h"
+#include <cstdio>
+#include <iostream>
 
 namespace {
 int width, height;
@@ -7,6 +9,12 @@ void framebuffer_size_callback(GLFWwindow *window, int _width, int _height) {
   glViewport(0, 0, _width, _height);
   width = _width;
   height = _height;
+}
+void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                    GLsizei length, const GLchar *message,
+                    const void *userParam) {
+  printf("GL debug: %s\n", message);
+  fflush(stdout);
 }
 
 } // namespace
@@ -34,7 +42,13 @@ App::App(int w, int h, std::string_view title, glm::vec3 cam_pos)
   glfwSwapInterval(1);
 
   err = glewInit();
-  assert(err == GLEW_OK);
+  if (err != GLEW_OK) {
+    std::cerr << "Error: glewInit: " << glewGetErrorString(err) << std::endl;
+    // return EXIT_FAILURE;
+    return;
+  }
+
+  glDebugMessageCallback(debug_callback, nullptr);
 }
 
 App::~App() { glfwTerminate(); }

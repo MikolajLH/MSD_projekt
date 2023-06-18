@@ -59,8 +59,13 @@ public:
           glm::vec4 color = clr::black;
           glm::vec3 pos = glm::vec3(float(c), float(r), -float(s));
 
-          if (lattice(s, r, c).type == air)
-            continue;
+          if (lattice(s, r, c).type == air) {
+            const auto &cell = lattice(s, r, c);
+            if (cell.smoke_contents == 0.f)
+              continue;
+            color = glm::vec4(glm::vec3(0.f),
+                              cell.smoke_contents / cell.smoke_capacity * 0.9f);
+          }
           if (glfwGetKey(wnd, GLFW_KEY_Q) == GLFW_PRESS) {
             const float celciusT = lattice(s, r, c).temperature - 273.f;
 
@@ -83,7 +88,7 @@ public:
           }
           draw_cube(cube_shader, pos, color);
         }
-    std::cout << lattice(4, 1, 5).temperature << "\n";
+    // std::cout << lattice(4, 1, 5).temperature << "\n";
   }
 
   Shader cube_shader;
