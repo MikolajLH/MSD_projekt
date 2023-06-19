@@ -1,5 +1,8 @@
 #include "application.h"
+#include "VertexArray.h"
+#include <GL/gl.h>
 #include <cstdio>
+#include <glm/fwd.hpp>
 #include <iostream>
 
 namespace {
@@ -19,8 +22,9 @@ void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
 
 } // namespace
 
-App::App(int w, int h, std::string_view title, glm::vec3 cam_pos)
-    : wnd(nullptr), camera(w, h, cam_pos) {
+App::App(int w, int h, size_t n, std::string_view title, glm::vec3 cam_pos)
+    : wnd(nullptr), camera(w, h, cam_pos), colors_vec{n * n * n},
+      indexes_vec(n * n * n) {
 
   auto err = glfwInit();
   assert(err);
@@ -58,6 +62,16 @@ void App::run() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  for (auto &v : colors_vec) {
+    v.r = 1.0;
+    v.g = 0.0;
+    v.b = 0.0;
+    v.a = 1.0;
+  }
+  for (int i = 0; i < indexes_vec.size(); i++) {
+    indexes_vec[i] = i;
+  }
+
   static float et = 0.f;
   while (not glfwWindowShouldClose(this->wnd)) {
     camera.width = width;
@@ -82,8 +96,8 @@ void App::clear(const glm::vec4 color) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void App::draw_cube(Shader &shader, glm::vec3 pos, glm::vec4 color,
-                    GLfloat size, GLfloat rot, glm::vec3 norm) {
+void App::draw_cubes(Shader &shader, int N, GLfloat size, GLfloat rot,
+                     glm::vec3 norm) {
   static const std::vector<glm::vec4> vertices = {
       glm::vec4{-0.5f, -0.5f, -0.5f, 1.f}, // A 0
       glm::vec4{0.5f, -0.5f, -0.5f, 1.f},  // B 1
@@ -127,23 +141,33 @@ void App::draw_cube(Shader &shader, glm::vec3 pos, glm::vec4 color,
 
   static VertexArray va;
 
-  static const bool dummy =
-      (va.link_attrib(vb, 0, 4, GL_FLOAT, sizeof(glm::vec4), (const void *)0),
-       false);
-
+  va.link_attrib(vb, 0, 4, GL_FLOAT, sizeof(glm::vec4), (const void *)0);
   shader.bind();
 
-  shader.set_uniform_vec4f("u_Color", color);
+  VertexBuffer colors(colors_vec.data(), colors_vec.size() * sizeof(glm::vec4));
+  colors.bind();
+
+  va.link_attrib(colors, 1, 4, GL_FLOAT, sizeof(glm::vec4), (const void *)0);
+  glVertexAttribDivisor(1, 1);
+
+  // VertexBuffer indexes(indexes_vec.data(), indexes_vec.size() *
+  // sizeof(GLint)); indexes.bind(); va.link_attrib(indexes, 2, 1, GL_INT,
+  // sizeof(GLint), (const void *)0); glVertexAttribDivisor(2, 1);
+
   glm::mat4 model = glm::mat4(1.f);
-  glm::mat4 mvp =
-      get_camera_matrix() *
-      glm::translate(glm::rotate(glm::scale(model, glm::vec3(size, size, size)),
-                                 rot, norm),
-                     pos);
+  glm::mat4 mvp = get_camera_matrix() * model;
   shader.set_uniform_mat4f("u_MVP", mvp);
+  GLint dimensions[] = {N, N, N};
+  shader.set_uniform_3i("dimensions", dimensions);
 
   va.bind();
   ib.bind();
 
-  glDrawElements(GL_TRIANGLES, ib.get_count(), GL_UNSIGNED_INT, nullptr);
+  glDrawElementsInstanced(GL_TRIANGLES, ib.get_count(), GL_UNSIGNED_INT,
+                          nullptr, N * N * N);
+
+  va.unbind();
+  ib.unbind();
+  shader.unbind();
+  // indexes.unbind();
 }
