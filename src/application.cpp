@@ -1,6 +1,8 @@
 #include "application.h"
+#include "Camera.h"
 #include "VertexArray.h"
 #include <GL/gl.h>
+#include <algorithm>
 #include <cstdio>
 #include <glm/fwd.hpp>
 #include <iostream>
@@ -136,6 +138,23 @@ void App::draw_cubes(Shader &shader, int N, GLfloat size, GLfloat rot,
       16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20};
   static bool init = false;
 
+  auto distance = [&](GLint index) {
+    float ix = index % N;
+    index /= N;
+    float iy = index % N;
+    index /= N;
+    float iz = index % N;
+
+    auto diff = (this->camera.Position - glm::vec3(ix, iy, iz));
+    return diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+  };
+
+  std::sort(indexes_vec.begin(), indexes_vec.end(), [&](GLint a, GLint b) {
+    auto alen = distance(a);
+    auto blen = distance(b);
+    return alen > blen;
+  });
+
   static VertexBuffer vb(vertices.data(), vertices.size() * sizeof(glm::vec4));
   static IndexBuffer ib(indices.data(), indices.size());
 
@@ -144,15 +163,33 @@ void App::draw_cubes(Shader &shader, int N, GLfloat size, GLfloat rot,
   va.link_attrib(vb, 0, 4, GL_FLOAT, sizeof(glm::vec4), (const void *)0);
   shader.bind();
 
-  VertexBuffer colors(colors_vec.data(), colors_vec.size() * sizeof(glm::vec4));
-  colors.bind();
+  // VertexBuffer colors(colors_vec.data(), colors_vec.size() *
+  // sizeof(glm::vec4)); colors.bind();
 
-  va.link_attrib(colors, 1, 4, GL_FLOAT, sizeof(glm::vec4), (const void *)0);
-  glVertexAttribDivisor(1, 1);
+  // va.link_attrib(colors, 1, 4, GL_FLOAT, sizeof(glm::vec4), (const void *)0);
+  // glVertexAttribDivisor(1, 1);
+
+  static GLuint ssbo_colors;
+  glGenBuffers(1, &ssbo_colors);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_colors);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, colors_vec.size() * sizeof(glm::vec4),
+               colors_vec.data(), GL_STATIC_DRAW);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, ssbo_colors);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // unbind
 
   // VertexBuffer indexes(indexes_vec.data(), indexes_vec.size() *
-  // sizeof(GLint)); indexes.bind(); va.link_attrib(indexes, 2, 1, GL_INT,
+  // sizeof(GLint)); indexes.bind(); va.link_attrib(indexes, 2, 2, GL_INT,
   // sizeof(GLint), (const void *)0); glVertexAttribDivisor(2, 1);
+
+  static GLuint ssbo;
+  glGenBuffers(1, &ssbo);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, indexes_vec.size() * sizeof(GLint),
+               indexes_vec.data(), GL_STATIC_DRAW);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ssbo);
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER, 3,
+                  indexes_vec.size() * sizeof(GLint), indexes_vec.data());
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // unbind
 
   glm::mat4 model = glm::mat4(1.f);
   glm::mat4 mvp = get_camera_matrix() * model;
