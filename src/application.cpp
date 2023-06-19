@@ -3,6 +3,7 @@
 #include "VertexArray.h"
 #include <GL/gl.h>
 #include <algorithm>
+#include <cstddef>
 #include <cstdio>
 #include <glm/fwd.hpp>
 #include <iostream>
@@ -26,7 +27,7 @@ void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
 
 App::App(int w, int h, size_t n, std::string_view title, glm::vec3 cam_pos)
     : wnd(nullptr), camera(w, h, cam_pos), colors_vec{n * n * n},
-      indexes_vec(n * n * n) {
+      indexes_vec(n * n * n), distances(n * n * n) {
 
   auto err = glfwInit();
   assert(err);
@@ -149,9 +150,13 @@ void App::draw_cubes(Shader &shader, int N, GLfloat size, GLfloat rot,
     return diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
   };
 
+  for (size_t i = 0; i < distances.size(); i++) {
+    distances[i] = distance(i);
+  }
+
   std::sort(indexes_vec.begin(), indexes_vec.end(), [&](GLint a, GLint b) {
-    auto alen = distance(a);
-    auto blen = distance(b);
+    auto alen = distances[a];
+    auto blen = distances[b];
     return alen > blen;
   });
 
