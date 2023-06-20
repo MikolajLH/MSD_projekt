@@ -60,7 +60,7 @@ Lattice3d::Material::Material(Type type)
         ignition_temperature = kelvin(250.f);
         autoignition_temperature = kelvin(2000.f);
         ignition_time = side / 3.f;
-        burning_time = 20.f;
+        burning_time = 360.f;
         generated_energy = 1500.f;
         smoke_emission = 0.3f;
         break;
@@ -75,7 +75,7 @@ Lattice3d::Material::Material(Type type)
         ignition_time = side / 0.8f;
         generated_energy = 500.f;
         smoke_emission = 0.8f;
-        burning_time = 15.f;
+        burning_time = 350.f;
         break;
     case Type::Fabrics:
         solid = true;
@@ -88,7 +88,7 @@ Lattice3d::Material::Material(Type type)
         ignition_time = side / 3.f;
         generated_energy = 1500.f;
         smoke_emission = 1.f;
-        burning_time = 20.f;
+        burning_time = 360.f;
         break;
     default:
         break;
@@ -212,14 +212,19 @@ void Lattice3d::update(float dt)
                     }
                 }
                 //
+                
+                
+                //if (r == 0 or r == N - 1)continue;
+
 
                 // smoke 
                 if (not current_cell.material.solid)
                 {
                     if (cD.state == Cell::State::on_fire) {
                         // Create new smoke
-                        cell_to_update.smoke_contents += std::min(
-                            0.5f / cD.material.burning_time,
+                        cell_to_update.smoke_contents +=
+                            std::min(
+                            0.5f / cD.timer,
                             current_cell.smoke_capacity - current_cell.smoke_contents);
                         // std::cout << "Smoke is being emitted, contents : "
                         //           << updated_cell.smoke_contents << std::endl;
