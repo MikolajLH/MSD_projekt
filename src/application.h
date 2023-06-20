@@ -50,4 +50,5 @@ protected:
   float farPlane = 100.f;
   std::vector<glm::vec4> colors_vec;
   std::vector<GLint> indexes_vec;
+  std::vector<float> distances;
 };
