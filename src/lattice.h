@@ -36,6 +36,7 @@ public:
 
   Cell &operator()(size_t s, size_t r, size_t c);
   const Cell &get_or(size_t s, size_t r, size_t c, const Cell &val = Cell());
+  Cell &get_mut_or(size_t s, size_t r, size_t c, Cell &val);
 
   void update(float dt);
 

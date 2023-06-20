@@ -18,6 +18,10 @@ auto Lattice::get_or(size_t s, size_t r, size_t c, const Cell &val)
   return (s < N and r < N and c < N) ? foreground[N * N * s + N * r + c] : val;
 }
 
+auto Lattice::get_mut_or(size_t s, size_t r, size_t c, Cell &val) -> Cell & {
+  return (s < N and r < N and c < N) ? foreground[N * N * s + N * r + c] : val;
+}
+
 void Lattice::update(float dt) {
 
   // update heat of each cell
@@ -67,47 +71,6 @@ void Lattice::update(float dt) {
         const auto &cE = get_or(s, r, c + 1, current_cell);
         const auto &cW = get_or(s, r, c - 1, current_cell);
 
-        if (current_cell.type == Cell::Type::air) {
-          if (cD.state == Cell::State::on_fire) {
-            // Create new smoke
-            updated_cell.smoke_contents += std::min(
-                0.5f / cD.burning_time,
-                current_cell.smoke_capacity - current_cell.smoke_contents);
-            // std::cout << "Smoke is being emitted, contents : "
-            //           << updated_cell.smoke_contents << std::endl;
-          }
-          const Cell cells[] = {cU, cN, cS, cE, cW, cD};
-          const float dn[] = {1.f, 0.5f, 0.5f, 0.5f, 0.5f, 0.25f};
-          const float dn_when_full[] = {0.f, 0.5f, 0.5f, 0.5f, 0.5f, 1.0f};
-          if (current_cell.smoke_capacity - current_cell.smoke_contents <=
-              current_cell.smoke_capacity * 0.1f) {
-            // Close to being full
-            for (size_t i = 1; i < 6; i++) {
-              const Cell &other = cells[i];
-              updated_cell.smoke_contents -=
-                  1. / 6. *
-                  std::min(current_cell.smoke_contents,
-                           updated_cell.smoke_capacity - other.smoke_contents);
-              updated_cell.smoke_contents +=
-                  1. / 6. *
-                  std::min(other.smoke_contents,
-                           other.smoke_capacity - current_cell.smoke_contents);
-            }
-          } else {
-            for (size_t i = 0; i < 6; i++) {
-              const Cell &other = cells[i];
-              updated_cell.smoke_contents -=
-                  1. / 6. *
-                  std::min(current_cell.smoke_contents,
-                           updated_cell.smoke_capacity - other.smoke_contents);
-              updated_cell.smoke_contents +=
-                  1. / 6. *
-                  std::min(other.smoke_contents,
-                           other.smoke_capacity - current_cell.smoke_contents);
-            }
-          }
-        }
-
         if (current_cell.state == Cell::State::non_flammable)
           continue;
 
@@ -147,4 +110,82 @@ void Lattice::update(float dt) {
       }
 
   foreground = background;
+
+  // for (size_t s = 0u; s < N; ++s)
+  // for (size_t s = N - 1; s >= 0; s--)
+  //   for (size_t r = N - 1; r >= 0; r--)
+  //     for (size_t c = N - 1; c >= 0; c--) {
+
+  for (size_t s = 0u; s < N; ++s)
+    for (size_t r = 0u; r < N; ++r)
+      for (size_t c = 0u; c < N; ++c) {
+        auto &current_cell = (*this)(s, r, c);
+        Cell &updated_cell = (*this)(s, r, c);
+
+        auto &cN = get_mut_or(s + 1, r, c, current_cell);
+        auto &cS = get_mut_or(s - 1, r, c, current_cell);
+        auto &cU = get_mut_or(s, r + 1, c, current_cell);
+        auto &cD = get_mut_or(s, r - 1, c, current_cell);
+        auto &cE = get_mut_or(s, r, c + 1, current_cell);
+        auto &cW = get_mut_or(s, r, c - 1, current_cell);
+
+        if (current_cell.type == Cell::Type::air) {
+          if (cD.state == Cell::State::on_fire) {
+            // Create new smoke
+            updated_cell.smoke_contents +=
+                std::min(0.5f / cD.burning_time, (current_cell.smoke_capacity -
+                                                  current_cell.smoke_contents) *
+                                                     2);
+            // std::cout << "Smoke is being emitted, contents : "
+            //           << updated_cell.smoke_contents << std::endl;
+          }
+          Cell *cells[] = {&cU, &cN, &cS, &cE, &cW, &cD};
+          const float dn[] = {1.f, 0.5f, 0.5f, 0.5f, 0.5f, 0.25f};
+          const float dn_when_full[] = {0.f, 0.5f, 0.5f, 0.5f, 0.5f, 1.0f};
+          const float old_contents = current_cell.smoke_contents;
+          if (current_cell.smoke_capacity - current_cell.smoke_contents <=
+              current_cell.smoke_capacity * 0.1f) {
+            // Close to being full
+            for (size_t i = 1; i < 6; i++) {
+              Cell &other = *cells[i];
+              if (other.type != Cell::Type::air)
+                continue;
+              float delta_smoke =
+                  -1. / 6. *
+                  std::min(old_contents,
+                           updated_cell.smoke_capacity - other.smoke_contents);
+              // delta_smoke +=
+              //     1. / 6. *
+              //     std::min(other.smoke_contents,
+              //              other.smoke_capacity -
+              //              current_cell.smoke_contents);
+
+              delta_smoke *= dn_when_full[i];
+
+              updated_cell.smoke_contents += 1.5 * delta_smoke;
+              other.smoke_contents -= delta_smoke;
+            }
+          } else {
+            for (size_t i = 0; i < 6; i++) {
+              Cell &other = *cells[i];
+              if (other.type != Cell::Type::air)
+                continue;
+              float delta_smoke =
+                  0 - 1. / 6. *
+                          std::min(old_contents, updated_cell.smoke_capacity -
+                                                     other.smoke_contents);
+              // delta_smoke +=
+              //     1. / 6. *
+              //     std::min(other.smoke_contents,
+              //              other.smoke_capacity -
+              //              current_cell.smoke_contents);
+              delta_smoke *= dn[i];
+              // std::cout << "Delta smoke : " << delta_smoke << std::endl;
+
+              updated_cell.smoke_contents += 1.5 * delta_smoke;
+              other.smoke_contents -= delta_smoke;
+            }
+          }
+        }
+      }
 }
