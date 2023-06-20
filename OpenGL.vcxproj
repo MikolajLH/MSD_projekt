@@ -162,9 +162,7 @@
     <ClCompile Include="src\application.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Cube.cpp" />
-    <ClCompile Include="src\Grid3d.cpp" />
     <ClCompile Include="src\IndexBuffer.cpp" />
-    <ClCompile Include="src\lattice.cpp" />
     <ClCompile Include="src\lattice3d.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Shader.cpp" />
@@ -180,9 +178,7 @@
     <ClInclude Include="src\application.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Cube.h" />
-    <ClInclude Include="src\Grid3d.h" />
     <ClInclude Include="src\IndexBuffer.h" />
-    <ClInclude Include="src\lattice.h" />
     <ClInclude Include="src\lattice3d.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\utility.h" />
