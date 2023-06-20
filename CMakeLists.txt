@@ -6,13 +6,11 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(msd_projekt 
    src/Camera.cpp
    src/Cube.cpp
-   src/Grid3d.cpp
    src/IndexBuffer.cpp
    src/main.cpp
    src/Shader.cpp
    src/VertexArray.cpp
    src/VertexBuffer.cpp
-   src/lattice.cpp
    src/application.cpp
    src/lattice3d.cpp
 )
