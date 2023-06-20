@@ -14,6 +14,7 @@ add_executable(msd_projekt
    src/VertexBuffer.cpp
    src/lattice.cpp
    src/application.cpp
+   src/lattice3d.cpp
 )
 
 find_package(glfw3 3.3 REQUIRED)
