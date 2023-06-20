@@ -22,4 +22,4 @@ Przysiśnięcie klawisza Q pozwala na zobaczenie rozkładu temperatury.
 ## Automat komórkowy
 Implementacja automatu komórkowego zawarta jest w plikach lattice3d.h oraz lattice3d.cpp.
 W nich zdefiniowana jest klasa Lattice3d, która agreguje obiekty typu Cell, na których wykonywane są obliczenia automatu.
-Mechanizm zmiany stanu komórek zawarty został w funkcji update() w klasie Lattice3d.
+Mechanizm zmiany stanu komórek zawarty został w funkcji update() w klasie Lattice3d. Stałe materiałowe zawarte są w klasie Material, a ich ustawienie w zależności od typu materiału następuje w konstruktorze tej klasy.
