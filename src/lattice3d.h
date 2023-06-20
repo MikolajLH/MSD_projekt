@@ -12,9 +12,9 @@ class Lattice3d
 {
 	public:
 
-		//static constexpr float boltzmann = 5.670367e-8;
+		static constexpr float boltzmann = 5.670367e-8;
 
-		static constexpr float side = 0.01f;//in meters
+		static constexpr float side = 0.02f;//in meters
 		static constexpr float area = side * side;
 		static constexpr float volume = side * side * side;
 

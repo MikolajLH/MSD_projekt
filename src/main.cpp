@@ -8,7 +8,7 @@
 glm::vec4 cell_heat_color(Lattice3d::Cell cell)
 {
     static constexpr float room_t = 294.f; //21
-    static constexpr float max_t = 1000.f;
+    static constexpr float max_t = 2000.f;
     glm::vec4 color(0, 0, 0, 0);
   
     float t_diff = room_t - cell.temperature;
@@ -51,11 +51,11 @@ public:
 
       for (size_t s = 0u; s < lattice.N; ++s)
           for (size_t c = 0u; c < lattice.N; ++c) {
-              lattice(s, 0, c).material = Lattice3d::Material::Type::Wood;
-              lattice(s, 0, c).material.color = clr::brown;
+              lattice(s, 1, c).material = Lattice3d::Material::Type::Wood;
+              lattice(s, 1, c).material.color = clr::brown;
 
-              lattice(s, 1, c).material = Lattice3d::Material::Type::Carpet;
-              lattice(s, 1, c).material.color = clr::light_green;
+              lattice(s, 2, c).material = Lattice3d::Material::Type::Carpet;
+              lattice(s, 2, c).material.color = clr::light_green;
           }
       for (size_t r = 0u; r < lattice.N; ++r)
           for (size_t c = 0u; c < lattice.N; ++c) {
@@ -71,8 +71,20 @@ public:
           }
 
 
+      for (size_t s = 0u; s < lattice.N; ++s)
+          for (size_t c = 0u; c < lattice.N; ++c) {
+              lattice(s, 0, c).material = Lattice3d::Material::Type::Concrete;
+              lattice(s, 0, c).material.color = clr::gray + clr::mono(0.1f);
+              lattice(s, 0, c).state = Lattice3d::Cell::State::non_flammable;
+
+              lattice(s, lattice.N - 1, c).material = Lattice3d::Material::Type::Concrete;
+              lattice(s, lattice.N - 1, c).material.color = clr::gray + clr::mono(-0.15f);
+              lattice(s, lattice.N - 1, c).state = Lattice3d::Cell::State::non_flammable;
+          }
+
+
       //couch
-      size_t s0 = 2, c0 = 1, r0 = 2;
+      size_t s0 = 2, c0 = 1, r0 = 3;
       size_t width = 6;
       size_t depth = 6;
      
@@ -104,7 +116,7 @@ public:
       //table
       s0 = 2;
       c0 = 5;
-      r0 = 2;
+      r0 = 3;
       width = 6;
       depth = 6;
 
@@ -127,7 +139,6 @@ public:
           }
 
 
-
       //sep wall
 
       for (size_t r = 0u; r < lattice.N; ++r)
@@ -143,7 +154,7 @@ public:
 
 
     if (glfwGetKey(wnd, GLFW_KEY_Z) == GLFW_PRESS)
-        lattice(2, 2, 1).temperature += 40.f;
+        lattice(3, 4, 1).temperature += 40.f;
 
     bool heat_map_view = (glfwGetKey(wnd, GLFW_KEY_Q) == GLFW_PRESS);
 
@@ -164,8 +175,9 @@ public:
               size_t index = N * N * s + N * r + c;
               colors_vec[index] = color;
           }
-
     draw_cubes(cube_shader, static_cast<int>(lattice.N));
+
+    std::cout << lattice(3, 4, 1).temperature << "\n";
   }
 
   Shader cube_shader;
