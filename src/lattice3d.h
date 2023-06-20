@@ -52,7 +52,7 @@ class Lattice3d
 
 		struct Cell
 		{
-			Material material = Material(Material::Type::Air);
+			Material material;
 			enum class State { non_flammable, on_fire, empty } state = State::empty;
 			float temperature = kelvin(21.f);
 
@@ -60,6 +60,8 @@ class Lattice3d
 			float smoke_contents = 0.0f;
 
 			float timer = 0.f;
+
+			Cell();
 		};
 
 		explicit Lattice3d(size_t N, const Cell& val = Cell{});

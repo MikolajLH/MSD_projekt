@@ -4,6 +4,10 @@ Lattice3d::Lattice3d(size_t N, const Cell& val)
     : N{ N }, foreground(N* N* N, val), background(N* N* N, val)
 {}
 
+Lattice3d::Cell::Cell()
+    : state(Cell::State::empty), material(Material::Type::Air)
+{}
+
 auto Lattice3d::operator()(size_t s, size_t r, size_t c) -> Cell& {
     assert(s < N and r < N and c < N);
     return foreground[N * N * s + N * r + c];
