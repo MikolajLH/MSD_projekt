@@ -40,7 +40,9 @@ Lattice3d::Material::Material(Type type)
         density = 1.29f;
         specific_heat = 1005.f;
         lambda = 0.026f;
+        alpha = 0.8f;
         ignition_temperature = kelvin(2000.f);
+        ignition_time = 5.f;
         generated_energy = 0.f;
         smoke_emission = 0.f;
         break;
@@ -60,7 +62,7 @@ Lattice3d::Material::Material(Type type)
         ignition_temperature = kelvin(250.f);
         autoignition_temperature = kelvin(2000.f);
         ignition_time = side / 3.f;
-        burning_time = 20.f;
+        burning_time = 70.f;
         generated_energy = 1500.f;
         smoke_emission = 0.3f;
         break;
@@ -75,7 +77,7 @@ Lattice3d::Material::Material(Type type)
         ignition_time = side / 0.8f;
         generated_energy = 500.f;
         smoke_emission = 0.8f;
-        burning_time = 15.f;
+        burning_time = 60.f;
         break;
     case Type::Fabrics:
         solid = true;
@@ -88,7 +90,7 @@ Lattice3d::Material::Material(Type type)
         ignition_time = side / 3.f;
         generated_energy = 1500.f;
         smoke_emission = 1.f;
-        burning_time = 20.f;
+        burning_time = 70.f;
         break;
     default:
         break;
@@ -137,15 +139,6 @@ void Lattice3d::update(float dt)
                     cell_to_update.temperature += dt * current_cell.material.alpha * (current_cell.temperature - cU.temperature);
                     cell_to_update.temperature -= dt * current_cell.material.alpha * (current_cell.temperature - cD.temperature);
                 }
-
-                //radiation
-                //naive
-                /*
-                float Qrad = 0.f;
-                for (const auto& neighboring_cell : { cN, cS, cU, cD, cE, cW }) {
-                    Qrad += neighboring_cell.material.beta * (powf(current_cell.temperature, 4.f) - powf(neighboring_cell.temperature, 4.f));
-                }
-                */
             }
 
     foreground = background;
@@ -170,11 +163,12 @@ void Lattice3d::update(float dt)
 
                 //fire
                 if (current_cell.state == Cell::State::on_fire) {
+
+
                     if (current_cell.timer > current_cell.material.burning_time) {
                         cell_to_update.timer = 0.f;
                         cell_to_update.state = Cell::State::empty;
                         cell_to_update.material = Material::Type::Air;
-                        //cell_to_update.type = Cell::Type::air;
                         continue;
                     }
                     else {
@@ -182,8 +176,6 @@ void Lattice3d::update(float dt)
                         if (current_cell.material.solid)
                         {
                             float Q = current_cell.material.generated_energy * dt;
-                            //float aaaa = Q / (current_cell.material.mass * current_cell.material.specific_heat);
-                            //std::cout << "cos  " << aaaa << "\n";
                             cell_to_update.temperature += Q / (current_cell.material.mass * current_cell.material.specific_heat);
                         }
                     }
@@ -211,15 +203,17 @@ void Lattice3d::update(float dt)
                         }
                     }
                 }
-                //
 
+                //
+                
                 // smoke 
                 if (not current_cell.material.solid)
                 {
-                    if (cD.state == Cell::State::on_fire) {
+                    if (cD.state == Cell::State::on_fire and cD.material.solid) {
                         // Create new smoke
-                        cell_to_update.smoke_contents += std::min(
-                            0.5f / cD.material.burning_time,
+                        cell_to_update.smoke_contents +=
+                            std::min(
+                            0.5f / cD.timer,
                             current_cell.smoke_capacity - current_cell.smoke_contents);
                         // std::cout << "Smoke is being emitted, contents : "
                         //           << updated_cell.smoke_contents << std::endl;
