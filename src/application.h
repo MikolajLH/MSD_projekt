@@ -22,8 +22,11 @@ constexpr glm::vec4 white = {1.f, 1.f, 1.f, 1.f};
 constexpr glm::vec4 brown = {0.20f, 0.10f, 0.07f, 1.f};
 constexpr glm::vec4 gray = {0.5f, 0.5f, 0.5f, 1.f};
 constexpr glm::vec4 orange = {1.f, 0.55f, 0.f, 1.f};
+constexpr glm::vec4 light_green = { 0.635f, 1.f, 0.663f, 1.f };
+constexpr glm::vec4 violet = { 0.925f, 0.38f, 1.f, 1.f };
 
 constexpr glm::vec4 alpha(float a) { return glm::vec4(0, 0, 0, a); }
+constexpr glm::vec4 mono(float t) { return glm::vec4(t, t, t, 1.f); }
 } // namespace clr
 
 class App {
