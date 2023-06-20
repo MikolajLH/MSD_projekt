@@ -47,8 +47,9 @@ public:
       : App(w, h, n, title, glm::vec3(10, 0, 20)),
         cube_shader("res/shaders/cube.shader"), lattice{n} {
 
+        //preparation of scene
 
-
+        //wooden floor and carpet
       for (size_t s = 0u; s < lattice.N; ++s)
           for (size_t c = 0u; c < lattice.N; ++c) {
               lattice(s, 1, c).material = Lattice3d::Material::Type::Wood;
@@ -57,6 +58,8 @@ public:
               lattice(s, 2, c).material = Lattice3d::Material::Type::Carpet;
               lattice(s, 2, c).material.color = clr::light_green;
           }
+          
+        //walls
       for (size_t r = 0u; r < lattice.N; ++r)
           for (size_t c = 0u; c < lattice.N; ++c) {
               lattice(0, r, c).material = Lattice3d::Material::Type::Concrete;
@@ -81,6 +84,8 @@ public:
               lattice(s, lattice.N - 1, c).material.color = clr::gray + clr::mono(-0.15f);
               lattice(s, lattice.N - 1, c).state = Lattice3d::Cell::State::non_flammable;
           }
+
+    //
 
 
       //couch
@@ -152,12 +157,14 @@ public:
   void update(float dt) override {
     clear(clr::blue);
 
-
+    // increasing temperature of a cell, so the fire can happen
     if (glfwGetKey(wnd, GLFW_KEY_Z) == GLFW_PRESS)
         lattice(3, 4, 1).temperature += 40.f;
-
+    
     bool heat_map_view = (glfwGetKey(wnd, GLFW_KEY_Q) == GLFW_PRESS);
 
+
+    // update the model
     lattice.update(dt);
 
     // draw lattice
@@ -176,8 +183,7 @@ public:
               colors_vec[index] = color;
           }
     draw_cubes(cube_shader, static_cast<int>(lattice.N));
-
-    std::cout << lattice(3, 4, 1).temperature << "\n";
+      
   }
 
   Shader cube_shader;
